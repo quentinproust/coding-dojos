@@ -1,0 +1,13 @@
+application:
+  env: ${APP_ENV:dev}
+  client:
+    location: ${CLIENT_LOCATION:http://localhost:1234}
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 976098152567-a7qni0u47qsfaojmt585cbekooo19vub.apps.googleusercontent.com
+            client-secret: G0mLlmNRU7hhpquXHT0LMLds
