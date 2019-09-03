@@ -16,7 +16,10 @@ class RoutingConfiguration {
     @Bean
     fun routerFunction(): RouterFunction<ServerResponse> {
         return RouterFunctions.route(
-                RequestPredicates.path("/api/**").negate(),
+                RequestPredicates.path("/api/**")
+                    .or(RequestPredicates.path("/oauth2/authorization/**"))
+                    .or(RequestPredicates.path("/logout"))
+                    .negate(),
                 HandlerFunction { req ->
                     WebClient.create("http://localhost:1234/${req.path()}").method(req.method()
                             ?: HttpMethod.GET)

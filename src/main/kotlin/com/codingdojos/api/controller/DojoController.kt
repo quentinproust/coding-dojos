@@ -4,26 +4,25 @@ import com.codingdojos.api.controller.io.NewDojo
 import com.codingdojos.api.model.Dojo
 import com.codingdojos.api.model.InterestedVote
 import com.codingdojos.api.repository.DojoReactiveRepository
+import com.codingdojos.api.service.user.UserInfoService
+import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.reactive.function.client.WebClient
+import reactor.util.function.Tuple2
 
 
 @RestController
 @RequestMapping("/api/dojos")
-class DojoController {
-
-    @Autowired
-    lateinit var dojoRepository: DojoReactiveRepository
+class DojoController @Autowired constructor(
+        val dojoRepository: DojoReactiveRepository,
+        val userInfoService: UserInfoService
+) {
 
     @GetMapping
     fun list(): Flux<Dojo> {
@@ -38,29 +37,27 @@ class DojoController {
         ))
     }
 
-    @PostMapping("/{:dojoId}/interests")
+    @PostMapping("/{dojoId}/interests")
     fun interested(
             @PathVariable dojoId: String,
-            @RequestBody interest: InterestedVote
+            @RequestBody payload: JsonNode,
+            @RegisteredOAuth2AuthorizedClient client: OAuth2AuthorizedClient
     ): Mono<Dojo> {
-        return dojoRepository.findById(dojoId)
-                .switchIfEmpty(Mono.error<Dojo>(RuntimeException("No dojo found for ${dojoId}")))
-                .flatMap {
-                    dojoRepository.save(it.copy(interested = it.interested.plus(interest)))
-                }
-    }
-/*
-    @DeleteMapping("/{:dojoId}/interests/{:name}")
-    fun removeInterested(
-            @PathVariable("dojoId") dojoId: String,
-            @PathVariable("name") name: String
-    ): Mono<ResponseEntity<InterestedVote>> {
+        val interested = payload.get("interested").asBoolean()
+
         return dojoRepository.findById(dojoId)
                 .switchIfEmpty(Mono.error<Dojo>(RuntimeException("No dojo found for $dojoId")))
-                .flatMap {dojo ->
-                    dojoRepository.save(dojo.copy(interested = dojo.interested.filter { it.name != name }))
+                .zipWith(userInfoService.of(client))
+                .flatMap { (dojo, user) ->
+                    dojoRepository.save(dojo.copy(interested = dojo.interested
+                            .filter { it.name != user.name }
+                            .plus(InterestedVote(
+                                    name = user.name,
+                                    interested = interested
+                            ))))
                 }
-                .map { ResponseEntity.noContent().build<InterestedVote>() }
     }
- */
 }
+
+private operator fun <T1, T2> Tuple2<T1, T2>.component1(): T1 = this.t1
+private operator fun <T1, T2> Tuple2<T1, T2>.component2(): T2 = this.t2

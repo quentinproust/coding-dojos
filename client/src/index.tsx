@@ -1,16 +1,5 @@
 import ReactDOM from 'react-dom';
 import * as React from 'react';
-import { DojoList, NewDojoForm } from './dojos';
-import { DojoIdeas } from './dojoIdeas';
-import { DatePolls } from './datePolls';
+import { App } from './App';
 
-ReactDOM.render(
-  (
-    <>
-      <h1>Coding Dojos !</h1>
-      <DojoList />
-      <NewDojoForm />
-    </>
-  ),
-  document.getElementById('root')
-);
+ReactDOM.render(<App />, document.getElementById('root'));

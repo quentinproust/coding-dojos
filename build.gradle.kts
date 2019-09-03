@@ -37,6 +37,7 @@ dependencies {
 
 tasks.findByName("build")?.dependsOn(tasks.findByName("npm_run_build"))
 tasks.findByName("npm_run_build")?.dependsOn(tasks.findByName("npm_install"))
+tasks.findByName("npm_run_start")?.dependsOn(tasks.findByName("npm_install"))
 
 tasks.withType<KotlinCompile> {
 	kotlinOptions {
