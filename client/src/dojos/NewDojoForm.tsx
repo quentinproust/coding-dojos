@@ -1,7 +1,7 @@
 import * as React from 'react';
 import axios from 'axios';
 
-import { Divider, Input, Button, Segment } from 'semantic-ui-react';
+import { Divider, Input, Button, Segment, Form } from 'semantic-ui-react';
 
 export default () => {
   const [theme, setTheme] = React.useState("");
@@ -24,19 +24,13 @@ export default () => {
   return (
     <>
       <Divider horizontal>Liste des Dojos</Divider>
-      <Segment>
-        <Input label='Thème : ' value={theme} onChange={e => setTheme(e.target.value)} />
-        <Input label='Lieu : ' value={location} onChange={e => setLocation(e.target.value)} />
-        <div>
-          <span>Theme : </span>
-          <input type="text"  />
-        </div>
-        <div>
-          <span>Location : </span>
-          <input type="text" value={location} onChange={e => setLocation(e.target.value)} />
-        </div>
-        <input type="button" onClick={saveNewDojo} value="Save" />
-      </Segment>
+      <Form size='large'>
+        <Segment stacked>
+          <Form.Input fluid icon='hashtag' iconPosition='left' placeholder='Thème' value={theme} onChange={e => setTheme(e.target.value)} />
+          <Form.Input fluid icon='map marker' iconPosition='left' placeholder='Lieu' value={location} onChange={e => setLocation(e.target.value)} />
+          <Button primary onClick={saveNewDojo}>Enregistrer</Button>
+        </Segment>
+      </Form>
     </>
   );
 }

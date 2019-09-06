@@ -8,16 +8,22 @@ import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import {
   Container,
   Menu,
+  Icon,
+  Image,
 } from 'semantic-ui-react'
+import StartSchedule from './dojos/StartSchedule';
 
 export const App = () => {
   return (
     <Router>
       <WithUser>
         <div>
-          <Menu fixed='top' inverted>
+          <Menu fixed='top' inverted style={{ backgroundColor: '#1768b1' }}>
             <Container>
-              <Menu.Item header>Condig Dojos</Menu.Item>
+              <Menu.Item header>
+                <Image src='https://www.serli.com/wp-content/themes/serli/dist/images/main-logo.png' size='small' style={{ marginRight: 10 }} />
+                <Icon name='lab' /> Coding Dojos
+              </Menu.Item>
               <Menu.Item as={Link} to="/">Home</Menu.Item>
               <Anonymous>
                 <Menu.Item position='right' as='a' href="/oauth2/authorization/google">
@@ -36,7 +42,10 @@ export const App = () => {
           </Menu>
           <Container text style={{ marginTop: '7em' }}>
             <Route path="/" exact component={DojoList} />
-            <Route path="/dojos/new" exact component={NewDojoForm} />
+            <Authenticated>
+              <Route path="/dojos/new" exact component={NewDojoForm} />
+              <Route path="/dojos/:dojoId/link_date_poll" component={StartSchedule} />
+            </Authenticated>
           </Container>
         </div>
       </WithUser>

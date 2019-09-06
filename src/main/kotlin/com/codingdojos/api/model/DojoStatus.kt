@@ -4,4 +4,5 @@ enum class DojoStatus {
     Proposed,
     Canceled,
     Done,
+    PollInProgress
 }
