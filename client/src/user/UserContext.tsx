@@ -1,8 +1,14 @@
 import * as React from 'react';
 import { User } from './UserService';
 
+export enum AuthState {
+  PENDING,
+  AUTHENTICATED,
+  NOT_AUTHENTICATED
+}
+
 export interface UserContextData {
-  authenticated: boolean
+  authenticated: AuthState,
   user?: User
 }
 
@@ -11,7 +17,7 @@ export interface UserContextHandle {
 }
 
 export const UserContext = React.createContext<UserContextData & UserContextHandle>({
-  authenticated: false,
+  authenticated: AuthState.PENDING,
   user: null,
   setUser: (_) => { },
 });

@@ -55,7 +55,7 @@ const ScheduleDojoButton = ({ dojo }) => {
           style={{ marginTop: 10 }}
           content='Planifier'
           as={Link}
-          to={`/dojos/${dojo.id}/link_date_poll`}
+          to={`/dojos/${dojo.id}/link-date-poll`}
         />
       </Authenticated>
     </Message>
@@ -69,13 +69,24 @@ const ShowPollButton = ({ dojo }) => {
         Un sondage est en cours afin de planifier ce dojo. 
         Vous pouvez ajouter vos disponibilités en cliquant sur le bouton ci-dessous :
       </Container>
+      <Button
+        icon='chart bar outline'
+        style={{ marginTop: 10 }}
+        content='Répondre au sondage'
+        as='a'
+        href={dojo.poll.externalDatePoll}
+      />
       <Authenticated>
+        <Container>
+          Assez de personnes ont répondues présent à l'appel du code ?
+          Choisissez une date pour le déroulement du dojo !
+        </Container>
         <Button
           icon='chart bar outline'
           style={{ marginTop: 10 }}
-          content='Répondre au sondage'
-          as='a'
-          href={dojo.poll.externalDatePoll}
+          content='Sélectionner une date'
+          as={Link}
+          to={`/dojos/${dojo.id}/select-time-slot`}
         />
       </Authenticated>
     </Message>

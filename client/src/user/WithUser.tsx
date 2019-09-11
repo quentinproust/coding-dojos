@@ -1,33 +1,40 @@
 import * as React from 'react';
 import { UserService } from './UserService';
-import { UserContext, UserContextData } from './UserContext';
+import { UserContext, UserContextData, AuthState } from './UserContext';
 
 export const WithUser = ({ children }) => {
   const [contextState, setContext] = React.useState<UserContextData>({
-    authenticated: false,
+    authenticated: AuthState.PENDING,
   });
 
   const setUser = user => {
     if (user) {
       setContext({
-        authenticated: true,
+        authenticated: AuthState.AUTHENTICATED,
         user: user
       })
     } else {
       setContext({
-        authenticated: false,
+        authenticated: AuthState.NOT_AUTHENTICATED,
       });
     }
   }
 
   React.useEffect(() => {
+    setContext({ ...contextState, authenticated: AuthState.PENDING })
+
     const userService = new UserService();
     userService.loadAuthenticatedUser()
       .then(user => {
         setContext({
-          authenticated: user.authenticated,
+          authenticated: user.authenticated ? AuthState.AUTHENTICATED : AuthState.NOT_AUTHENTICATED,
           user: user
         });
+      })
+      .catch(() => {
+        setContext({
+          authenticated: AuthState.NOT_AUTHENTICATED,
+        })
       })
   }, []);
 

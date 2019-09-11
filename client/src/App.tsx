@@ -12,6 +12,8 @@ import {
   Image,
 } from 'semantic-ui-react'
 import StartSchedule from './dojos/StartSchedule';
+import SelectTimeSlot from './dojos/SelectTimeSlot';
+import AuthenticatedRoute from './routing/AuthenticatedRoute';
 
 export const App = () => {
   return (
@@ -42,10 +44,9 @@ export const App = () => {
           </Menu>
           <Container text style={{ marginTop: '7em' }}>
             <Route path="/" exact component={DojoList} />
-            <Authenticated>
-              <Route path="/dojos/new" exact component={NewDojoForm} />
-              <Route path="/dojos/:dojoId/link_date_poll" component={StartSchedule} />
-            </Authenticated>
+            <AuthenticatedRoute path="/dojos/new" exact component={NewDojoForm} />
+            <AuthenticatedRoute path="/dojos/:dojoId/link-date-poll" component={StartSchedule} />
+            <AuthenticatedRoute path="/dojos/:dojoId/select-time-slot" component={SelectTimeSlot} />
           </Container>
         </div>
       </WithUser>
