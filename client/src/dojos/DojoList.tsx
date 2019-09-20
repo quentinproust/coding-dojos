@@ -6,6 +6,25 @@ import { UserContext, UserContextData } from '../user/UserContext';
 import { Link } from 'react-router-dom';
 import { List, Segment, Divider, Button, Message, Container } from 'semantic-ui-react';
 
+const DojosForStatus = ({ dojos, title, saveInterest }) => {
+  if (!dojos) {
+    return null;
+  }
+  return (
+    <>
+      <Divider horizontal>{title}</Divider>
+
+      <Segment vertical>
+        <List divided relaxed>
+          {dojos.map(dojo => (
+            <DojoItem key={dojo.id} dojo={dojo} saveInterest={saveInterest} />
+          ))}
+        </List>
+      </Segment>
+    </>
+  );
+};
+
 const Interested = ({ dojo, saveInterest }) => {
   const upvoteCount = dojo.interested.filter(i => i.interested).length;
   const downvoteCount = dojo.interested.filter(i => !i.interested).length;
@@ -41,6 +60,8 @@ const States = ({ dojo }) => {
     return <ScheduleDojoButton dojo={dojo} />;
   } else if (dojo.status === 'PollInProgress') {
     return <ShowPollButton dojo={dojo} />
+  } else if (dojo.status === 'Scheduled') {
+    return <ShowScheduledTimeSlot dojo={dojo} />
   }
   return null;
 };
@@ -92,6 +113,46 @@ const ShowPollButton = ({ dojo }) => {
     </Message>
   );
 };
+
+const ShowScheduledTimeSlot = ({ dojo }) => {
+  const parts = dojo.timeSlot.split('-');
+  const timeSlot = new Date(parts[2], parts[1], parts[0]);
+  const isPastScheduledSlot = new Date() > timeSlot;
+
+  return (
+    <>
+      {!isPastScheduledSlot && (
+        <Message positive>
+          <Container>
+            Le dojo s'est déroulé le {dojo.timeSlot}
+          </Container>
+          <Button
+            icon='window close outline'
+            style={{ marginTop: 10 }}
+            content='Clore le dojo'
+          />
+        </Message>
+      )}
+      {!isPastScheduledSlot && (
+        <Message info>Le dojo est planifié le {dojo.timeSlot}</Message>
+      )}
+      <Message>
+        <Container>
+          Le sondage est fini 😥<br />
+          Mais vous pouvez contacter les organisateurs pour participer au dojo.
+          Vous pouvez ajouter vos disponibilités en cliquant sur le bouton ci-dessous :
+        </Container>
+        <Button
+          icon='chart bar outline'
+          style={{ marginTop: 10 }}
+          content='Répondre au sondage'
+          as='a'
+          href={dojo.poll.externalDatePoll}
+        />
+      </Message>
+    </>
+  );
+}
 
 const DojoItem = ({ dojo, saveInterest }) => {
   return (
@@ -146,11 +207,16 @@ export default () => {
     loadDojos()
   }, []);
 
-  console.log({ dojos });
+  const dojosByStatus = dojos.reduce((acc, val) => {
+    const previous = acc[val.status] || [];
+    return {
+      ...acc,
+      [val.status]: previous.concat(val),
+    };
+  }, {});
 
   return (
     <>
-      <Divider horizontal>Liste des Dojos</Divider>
       <Anonymous>
         <Message>Aucun dojo ci-dessous ne vous intéresse ? Connecter vous afin de proposer un prochain dojo !</Message>
       </Anonymous>
@@ -161,13 +227,11 @@ export default () => {
         </Message>
       </Authenticated>
 
-      <Segment vertical>
-        <List divided relaxed>
-          {dojos.map(dojo => (
-            <DojoItem key={dojo.id} dojo={dojo} saveInterest={saveInterest} />
-          ))}
-        </List>
-      </Segment>
+      <DojosForStatus saveInterest={saveInterest} dojos={dojosByStatus['Scheduled']} title="Les prochains Dojos" />
+      <DojosForStatus saveInterest={saveInterest} dojos={dojosByStatus['PollInProgress']} title="Les Dojos en préparation" />
+      <DojosForStatus saveInterest={saveInterest} dojos={dojosByStatus['Proposed']} title="Les idées de Dojos" />
+      <DojosForStatus saveInterest={saveInterest} dojos={dojosByStatus['Done']} title="Les précédents Dojos" />
+      <DojosForStatus saveInterest={saveInterest} dojos={dojosByStatus['Canceled']} title="Les Dojos que personne n'aime" />
     </>
   );
 }

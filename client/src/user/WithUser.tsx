@@ -26,6 +26,7 @@ export const WithUser = ({ children }) => {
     const userService = new UserService();
     userService.loadAuthenticatedUser()
       .then(user => {
+        console.log('authentication_response', user);
         setContext({
           authenticated: user.authenticated ? AuthState.AUTHENTICATED : AuthState.NOT_AUTHENTICATED,
           user: user
@@ -48,7 +49,7 @@ export const WithUser = ({ children }) => {
 export const Anonymous = ({ children }) => {
   const value = React.useContext(UserContext);
 
-  if (!value.authenticated) {
+  if (value.authenticated == AuthState.NOT_AUTHENTICATED) {
     return children; 
   } else {
     return null;
@@ -58,7 +59,7 @@ export const Anonymous = ({ children }) => {
 export const Authenticated = ({ children }) => {
   const value = React.useContext(UserContext);
 
-  if (value.authenticated) {
+  if (value.authenticated == AuthState.AUTHENTICATED) {
     return children; 
   } else {
     return null;

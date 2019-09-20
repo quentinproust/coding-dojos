@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { UserContext } from './UserContext';
 import { Authenticated, Anonymous } from './WithUser';
+import { Icon } from 'semantic-ui-react';
 
 const UserInfoInternal = () => {
   const value = React.useContext(UserContext);
   return (
-    <span>{value.user.name}</span>
+    <span><Icon name="user" />{value.user.name}</span>
   );
 }
 

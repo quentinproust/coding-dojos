@@ -47,6 +47,17 @@ class DojoController @Autowired constructor(
         val location: String
     )
 
+    @PutMapping
+    fun save(@RequestBody dojo: Dojo): Mono<Dojo> {
+        return dojoRepository.existsById(dojo.id)
+            .flatMap { exists ->
+                when (exists) {
+                    true -> dojoRepository.save(dojo)
+                    false -> Mono.error(RuntimeException("dojo ${dojo.id} was not found"))
+                }
+            }
+    }
+
     @PostMapping("/{dojoId}/interests")
     fun interested(
         @PathVariable dojoId: String,
@@ -86,6 +97,26 @@ class DojoController @Autowired constructor(
     data class ExternalDatePollInput(
         @NotBlank
         val uri: String
+    )
+
+    @PostMapping("/{dojoId}/time_slot")
+    fun saveTimeSlot(
+        @PathVariable dojoId: String,
+        @Valid @RequestBody payload: TimeSlotInput
+    ): Mono<Dojo> {
+        return dojoRepository.findById(dojoId)
+            .switchIfEmpty(Mono.error<Dojo>(RuntimeException("No dojo found for $dojoId")))
+            .flatMap {
+                dojoRepository.save(it.copy(
+                    status = DojoStatus.Scheduled,
+                    timeSlot = payload.timeSlot
+                ))
+            }
+    }
+
+    data class TimeSlotInput(
+        @NotBlank
+        val timeSlot: String
     )
 }
 

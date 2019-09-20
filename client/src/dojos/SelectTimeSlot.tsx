@@ -7,9 +7,9 @@ import { DateInput } from 'semantic-ui-calendar-react';
 export default ({ match }) => {
   const [date, setDate] = React.useState("");
 
-  /*const savePoll = () => {
-    axios.post(`/api/dojos/${match.params.dojoId}/external_date_poll`, {
-      uri
+  const savePoll = () => {
+    axios.post(`/api/dojos/${match.params.dojoId}/time_slot`, {
+      timeSlot: date,
     })
       .then((response) => {
         console.log(response);
@@ -18,7 +18,7 @@ export default ({ match }) => {
       .catch((error) => {
         console.log(error);
       });
-  };*/
+  };
 
   return (
     <>
@@ -33,9 +33,9 @@ export default ({ match }) => {
             inline
             name='date'
             value={date}
-            onChange={e => setDate(e.target.value)}
+            onChange={(_, { value }) => setDate(value)}
           />
-          <Button primary>Enregistrer</Button>
+          <Button primary onClick={() => savePoll()}>Enregistrer</Button>
         </Form>
       </Segment>
     </>
