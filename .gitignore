@@ -3,5 +3,8 @@ node_modules/**
 client/node_modules/**
 client/dist/**
 client/.cache/**
+client/.gradle
+client/build
+client/dist
 .idea/**
 .gradle/**

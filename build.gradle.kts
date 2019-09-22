@@ -1,16 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
 	id("org.springframework.boot") version "2.1.6.RELEASE"
 	id("io.spring.dependency-management") version "1.0.7.RELEASE"
 	kotlin("jvm") version "1.2.71"
 	kotlin("plugin.spring") version "1.2.71"
-
-	id("com.moowork.node") version "1.3.1"
 }
 
-group = "com.codingdojos"
-version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -35,13 +32,25 @@ dependencies {
 	testImplementation("io.projectreactor:reactor-test")
 }
 
-tasks.findByName("build")?.dependsOn(tasks.findByName("npm_run_build"))
-tasks.findByName("npm_run_build")?.dependsOn(tasks.findByName("npm_install"))
-tasks.findByName("npm_run_start")?.dependsOn(tasks.findByName("npm_install"))
-
 tasks.withType<KotlinCompile> {
 	kotlinOptions {
 		freeCompilerArgs = listOf("-Xjsr305=strict")
 		jvmTarget = "1.8"
 	}
+}
+
+val copyClientBuild = tasks.register("copyClientBuild", Copy::class) {
+    group = "other"
+    description = "Copy client dist in public resources"
+    dependsOn("client:build")
+    from("client/dist") {
+        include("*/**")
+    }
+    into("${project.buildDir}/resources/main/public/client")
+}
+
+tasks.named("bootJar", BootJar::class) {
+    dependsOn(copyClientBuild)
+    archiveVersion.set("")
+    launchScript()
 }

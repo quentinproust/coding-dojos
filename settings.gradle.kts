@@ -1,1 +1,3 @@
-rootProject.name = "api"
+rootProject.name = "com.serli.codingdojos"
+
+include("client")
