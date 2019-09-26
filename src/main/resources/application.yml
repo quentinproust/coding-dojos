@@ -2,7 +2,7 @@ application:
   env: ${APP_ENV:dev}
   client:
     location: ${CLIENT_LOCATION:http://localhost:1234}
-    from-parcel: false
+    from-parcel: ${FROM_PARCEL:false}
 
 spring:
   security:

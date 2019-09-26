@@ -5,11 +5,10 @@ import java.util.*
 
 data class Dojo(
         val id: String = UUID.randomUUID().toString(),
+        val label: String,
         val status: DojoStatus = DojoStatus.Proposed,
-        val theme: String,
-        val location: String,
+        val subject: Subject? = null,
+        val location: String? = null,
         val date: LocalDate? = null,
-        val timeSlot: String? = null,
-        val interested: List<InterestedVote> = emptyList(),
         val poll: DatePoll? = null
 )

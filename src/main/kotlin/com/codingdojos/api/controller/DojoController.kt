@@ -3,7 +3,6 @@ package com.codingdojos.api.controller
 import com.codingdojos.api.model.DatePoll
 import com.codingdojos.api.model.Dojo
 import com.codingdojos.api.model.DojoStatus
-import com.codingdojos.api.model.InterestedVote
 import com.codingdojos.api.repository.DojoReactiveRepository
 import com.codingdojos.api.service.user.UserInfoService
 import com.fasterxml.jackson.databind.JsonNode
@@ -33,20 +32,12 @@ class DojoController @Autowired constructor(
         return dojoRepository.findAll()
     }
 
-    @PostMapping
-    fun create(@RequestBody dojo: NewDojo): Mono<Dojo> {
-        return dojoRepository.save(Dojo(
-            theme = dojo.theme,
-            location = dojo.location
-        ))
+   @PostMapping
+    fun create(@RequestBody dojo: Dojo): Mono<Dojo> {
+        return dojoRepository.save(dojo)
     }
 
-    data class NewDojo(
-        val id: String = UUID.randomUUID().toString(),
-        val theme: String,
-        val location: String
-    )
-
+/* 
     @PutMapping
     fun save(@RequestBody dojo: Dojo): Mono<Dojo> {
         return dojoRepository.existsById(dojo.id)
@@ -80,7 +71,7 @@ class DojoController @Autowired constructor(
     }
 
     @PostMapping("/{dojoId}/external_date_poll")
-    fun saveExternalDatePoll(
+fun saveExternalDatePoll(
         @PathVariable dojoId: String,
         @Valid @RequestBody payload: ExternalDatePollInput
     ): Mono<Dojo> {
@@ -118,7 +109,5 @@ class DojoController @Autowired constructor(
         @NotBlank
         val timeSlot: String
     )
+    */
 }
-
-private operator fun <T1, T2> Tuple2<T1, T2>.component1(): T1 = this.t1
-private operator fun <T1, T2> Tuple2<T1, T2>.component2(): T2 = this.t2

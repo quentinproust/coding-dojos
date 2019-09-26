@@ -9,4 +9,6 @@ services:
       - SPRING_DATA_MONGODB_HOST=mongo-db
   mongo-db:
     image: "mongo:4.2"
+    ports:
+      - 27017:27017
 
