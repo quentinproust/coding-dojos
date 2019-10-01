@@ -24,6 +24,9 @@ import org.springframework.web.reactive.function.server.RouterFunctions.resource
 
 @Configuration
 class RoutingConfiguration {
+    @Value("\${application.client.location}")
+    lateinit var clientLocation: String
+
     val notApi = RequestPredicates.path("/api/**")
         .or(RequestPredicates.path("/oauth2/authorization/**"))
         .or(RequestPredicates.path("/logout"))
@@ -35,7 +38,7 @@ class RoutingConfiguration {
         return RouterFunctions.route(
             notApi,
             HandlerFunction { req ->
-                WebClient.create("http://localhost:1234/${req.path()}").method(req.method()
+                WebClient.create("$clientLocation/${req.path()}").method(req.method()
                     ?: HttpMethod.GET)
                     .exchange()
                     .flatMap { response ->
