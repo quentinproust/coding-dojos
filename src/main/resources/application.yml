@@ -12,3 +12,8 @@ spring:
           google:
             client-id: 976098152567-a7qni0u47qsfaojmt585cbekooo19vub.apps.googleusercontent.com
             client-secret: G0mLlmNRU7hhpquXHT0LMLds
+
+profile:
+  user:
+    admin: vincent.gouadon@serli.com,quentin.proust@serli.com
+    vip: sylvie.colas1@gmail.com

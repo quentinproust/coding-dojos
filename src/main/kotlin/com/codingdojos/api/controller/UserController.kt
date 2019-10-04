@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient
@@ -41,6 +42,10 @@ class UserController {
     @Autowired
     lateinit var authorizedClientService: ReactiveOAuth2AuthorizedClientService
 
+
+    @Value("#{'\${profile.user.admin}'.split(',')}")
+    lateinit var listAdmin: List<String>
+
     @GetMapping(
         "/current",
         produces = [MediaType.APPLICATION_JSON_UTF8_VALUE]
@@ -59,9 +64,11 @@ class UserController {
                 authentication.name
             )
             .flatMap { userInfoService.of(it) }
+
             .map {
                 ResponseEntity.ok(objectMapper.convertValue(it, ObjectNode::class.java)
                     .put("authenticated", true)
+                    .put("admin",listAdmin.contains(it.email))
                 )
             }
     }

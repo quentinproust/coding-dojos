@@ -28,7 +28,8 @@ class DojoController @Autowired constructor(
 ) {
 
     @GetMapping
-    fun list(): Flux<Dojo> {
+    fun list(@RegisteredOAuth2AuthorizedClient client: OAuth2AuthorizedClient): Flux<Dojo> {
+
         return dojoRepository.findAll()
     }
 
