@@ -4,6 +4,7 @@ import com.codingdojos.api.model.DatePoll
 import com.codingdojos.api.model.Dojo
 import com.codingdojos.api.model.DojoStatus
 import com.codingdojos.api.repository.DojoReactiveRepository
+import com.codingdojos.api.service.user.UserInfo
 import com.codingdojos.api.service.user.UserInfoService
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,8 +17,13 @@ import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2Aut
 import org.springframework.web.bind.annotation.GetMapping
 import reactor.util.function.Tuple2
 import java.util.*
+import java.util.logging.Logger
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.Authentication
+
+
 
 
 @RestController
@@ -26,11 +32,25 @@ class DojoController @Autowired constructor(
     val dojoRepository: DojoReactiveRepository,
     val userInfoService: UserInfoService
 ) {
+    val logger = Logger.getLogger(DojoController::class.toString())
+
 
     @GetMapping
-    fun list(@RegisteredOAuth2AuthorizedClient client: OAuth2AuthorizedClient): Flux<Dojo> {
+    fun list(): Flux<Dojo> {
 
-        return dojoRepository.findAll()
+        val authentication = SecurityContextHolder
+            .getContext()
+            .authentication
+        logger.info(authentication.toString())
+
+        return dojoRepository.findAll().map {
+            val isAdmin: Boolean = false
+            if ( ! isAdmin) {
+                val copy: DatePoll? = it.poll?.copy(adminDatePollUrl = "")
+                return@map it.copy(poll = copy)
+            }
+            it
+        }
     }
 
    @PostMapping

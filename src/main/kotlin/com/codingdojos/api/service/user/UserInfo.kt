@@ -11,5 +11,6 @@ data class UserInfo(
         val picture: String,
         val email: String,
         @get:JsonProperty("email_verified") val emailVerified: Boolean,
+        val isAdmin: Boolean = false,
         val hd: String?
 )
