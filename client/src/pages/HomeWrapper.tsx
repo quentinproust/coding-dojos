@@ -1,41 +1,12 @@
 import * as React from 'react';
-import axios from 'axios';
 import uuid from "uuid";
-import { Segment, Button, Card, List, Grid, Icon, Step, Message, Item } from 'semantic-ui-react'
-
-import { UserContext, AuthState } from '../user/UserContext';
+import { Segment, Grid, Message } from 'semantic-ui-react'
 
 import Dojo from '../components/dojos/dojos'
-import { Authenticated, Anonymous } from '../user/WithUser';
 import ListSubject from '../components/subjects/subjects';
+import { Authenticated, Anonymous } from '../user/WithUser';
+import { useServices } from '../services';
 
-
-/****** SERVICE */
-
-const getListSubject = () => {
-  return axios.get(`/api/subjects`)
-    .then((response) => {
-      return response.data;
-    });
-}
-
-const getListDojo = () => {
-  return axios.get(`/api/dojos`)
-    .then((response) => {
-      return response.data;
-    });
-}
-
-
-/*********** */
-
-
-const toggleVote2 = (id) => {
-  return axios.post(`/api/subjects/${id}/interest`)
-    .then((response) => {
-      return response.data;
-    });
-}
 
 export default () => {
 
@@ -44,10 +15,14 @@ export default () => {
   const [errors, setErrors] = React.useState([]);
   const [reloadplease, setreloadplease] = React.useState(true);
   
-
+  const actions = useServices(s => ({
+    toggleInterest: s.subjectService.toggleInterest,
+    getListSubject: s.subjectService.list,
+    getListDojo: s.dojoService.list,
+  }));
 
   const toggleVote = (id) => {
-    toggleVote2(id)
+    actions.toggleInterest(id)
       .then(response =>
         setreloadplease(!reloadplease) // TODO c'est degueu
       )
@@ -58,9 +33,8 @@ export default () => {
     setErrors(errors.filter(error => error.id !== id))
   }
 
-
   React.useEffect(() => {
-    getListSubject()
+    actions.getListSubject()
       .then(listeSubject => {
         setSubjects(listeSubject)
         console.log('getListSubject - je met des Subjects ')
@@ -74,7 +48,7 @@ export default () => {
   }, [reloadplease]);
 
   React.useEffect(() => {
-    getListDojo()
+    actions.getListDojo()
       .then(listeDojo =>
         setDojos(listeDojo)
       ).catch(error => {
