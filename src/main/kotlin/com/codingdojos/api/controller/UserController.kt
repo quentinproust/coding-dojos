@@ -1,16 +1,16 @@
 package com.codingdojos.api.controller
 
+import com.codingdojos.api.service.user.UserInfo
 import com.codingdojos.api.service.user.UserInfoService
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ResolvableType
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService
+import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
+import java.util.*
 
 
 @RestController
@@ -34,10 +35,6 @@ class UserController {
     @Autowired
     lateinit var clientRegistrationRepository: ReactiveClientRegistrationRepository
 
-    @Autowired
-    lateinit var authorizedClientService: ReactiveOAuth2AuthorizedClientService
-
-
     @Value("#{'\${profile.user.admin}'.split(',')}")
     lateinit var listAdmin: List<String>
 
@@ -46,25 +43,46 @@ class UserController {
         produces = [MediaType.APPLICATION_JSON_UTF8_VALUE]
     )
     fun getCurrentUser(
-        authentication: OAuth2AuthenticationToken?
     ): Mono<ResponseEntity<ObjectNode>> {
-        if (authentication == null) {
-            val notAuthenticated = JsonNodeFactory.instance.objectNode().put("authenticated", false)
-            return Mono.just(ResponseEntity.ok(notAuthenticated));
-        }
-        return authorizedClientService
-            .loadAuthorizedClient<OAuth2AuthorizedClient>(
-                authentication.authorizedClientRegistrationId,
-                authentication.name
-            )
-            .flatMap { userInfoService.of(it) }
-
-            .map {
-                ResponseEntity.ok(objectMapper.convertValue(it, ObjectNode::class.java)
-                    .put("authenticated", true)
-                    .put("admin",listAdmin.contains(it.email))
-                )
+        return ReactiveSecurityContextHolder.getContext()
+            .map { Optional.of(it.authentication) }
+            .defaultIfEmpty(Optional.empty())
+            .map { authenticationOpt ->
+                authenticationOpt.map<UserInfoDto> {
+                    UserInfoDto.OAuthAuthenticated(
+                        listAdmin.contains(it.details),
+                        when (it) {
+                            is OAuth2AuthenticationToken -> {
+                                LoggerFactory.getLogger(this.javaClass).info("USer info : {}", it)
+                                mapAttributesToUserInfo(it)
+                            }
+                            else -> throw RuntimeException("$it is not supported")
+                        }
+                    )
+                }.orElseGet { UserInfoDto.NotAuthenticated }
             }
+            .map {
+                ResponseEntity.ok(objectMapper.convertValue(it, ObjectNode::class.java))
+            }
+    }
+
+    fun mapAttributesToUserInfo(auth: OAuth2AuthenticationToken): UserInfo {
+        val attributes = auth.principal.attributes
+        return UserInfo(
+            sub = attributes["sub"] as String,
+            name = attributes["name"] as String,
+            profile = attributes["profile"] as String?,
+            picture = attributes["picture"] as String,
+            email = attributes["email"] as String,
+            emailVerified = attributes["email_verified"] as Boolean,
+            hd = attributes["hd"] as String?,
+            grantedAuthorities = auth.authorities.map { it.authority }
+        )
+    }
+
+    sealed class UserInfoDto(val authenticated: Boolean) {
+        object NotAuthenticated : UserInfoDto(false)
+        data class OAuthAuthenticated(val admin: Boolean, val attributes: UserInfo) : UserInfoDto(true)
     }
 
     @GetMapping(

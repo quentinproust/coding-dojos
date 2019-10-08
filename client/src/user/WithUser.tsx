@@ -29,7 +29,7 @@ export const WithUser = ({ children }) => {
         console.log('authentication_response', user);
         setContext({
           authenticated: user.authenticated ? AuthState.AUTHENTICATED : AuthState.NOT_AUTHENTICATED,
-          user: user
+          user: user.attributes
         });
       })
       .catch(() => {
