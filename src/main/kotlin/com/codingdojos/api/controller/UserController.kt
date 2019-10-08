@@ -2,6 +2,7 @@ package com.codingdojos.api.controller
 
 import com.codingdojos.api.service.user.UserInfo
 import com.codingdojos.api.service.user.UserInfoService
+import com.codingdojos.api.service.user.mapAuthenticationToUserInfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.slf4j.LoggerFactory
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 import java.util.*
-
 
 @RestController
 @RequestMapping(path = ["/api/users"])
@@ -54,7 +54,7 @@ class UserController {
                         when (it) {
                             is OAuth2AuthenticationToken -> {
                                 LoggerFactory.getLogger(this.javaClass).info("USer info : {}", it)
-                                mapAttributesToUserInfo(it)
+                                mapAuthenticationToUserInfo(it)
                             }
                             else -> throw RuntimeException("$it is not supported")
                         }
@@ -64,20 +64,6 @@ class UserController {
             .map {
                 ResponseEntity.ok(objectMapper.convertValue(it, ObjectNode::class.java))
             }
-    }
-
-    fun mapAttributesToUserInfo(auth: OAuth2AuthenticationToken): UserInfo {
-        val attributes = auth.principal.attributes
-        return UserInfo(
-            sub = attributes["sub"] as String,
-            name = attributes["name"] as String,
-            profile = attributes["profile"] as String?,
-            picture = attributes["picture"] as String,
-            email = attributes["email"] as String,
-            emailVerified = attributes["email_verified"] as Boolean,
-            hd = attributes["hd"] as String?,
-            grantedAuthorities = auth.authorities.map { it.authority }
-        )
     }
 
     sealed class UserInfoDto(val authenticated: Boolean) {
