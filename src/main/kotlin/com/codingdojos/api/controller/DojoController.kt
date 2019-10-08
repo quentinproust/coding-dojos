@@ -2,28 +2,16 @@ package com.codingdojos.api.controller
 
 import com.codingdojos.api.model.DatePoll
 import com.codingdojos.api.model.Dojo
-import com.codingdojos.api.model.DojoStatus
 import com.codingdojos.api.repository.DojoReactiveRepository
-import com.codingdojos.api.service.user.UserInfo
 import com.codingdojos.api.service.user.UserInfoService
-import com.fasterxml.jackson.databind.JsonNode
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient
-import org.springframework.web.bind.annotation.GetMapping
-import reactor.util.function.Tuple2
+import reactor.core.publisher.toFlux
 import java.util.*
-import java.util.logging.Logger
-import javax.validation.Valid
-import javax.validation.constraints.NotBlank
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.Authentication
-
-
 
 
 @RestController
@@ -32,28 +20,35 @@ class DojoController @Autowired constructor(
     val dojoRepository: DojoReactiveRepository,
     val userInfoService: UserInfoService
 ) {
-    val logger = Logger.getLogger(DojoController::class.toString())
-
+    val logger = LoggerFactory.getLogger(DojoController::class.java)
 
     @GetMapping
     fun list(): Flux<Dojo> {
+        logger.info("Get dojos")
 
-        val authentication = SecurityContextHolder
-            .getContext()
-            .authentication
-        logger.info(authentication.toString())
-
-        return dojoRepository.findAll().map {
-            val isAdmin: Boolean = false
-            if ( ! isAdmin) {
-                val copy: DatePoll? = it.poll?.copy(adminDatePollUrl = "")
-                return@map it.copy(poll = copy)
+        return ReactiveSecurityContextHolder.getContext()
+            .map {
+                logger.info("Context {}", it)
+                it
             }
-            it
-        }
+            .map { Optional.of(it.authentication) }
+            .defaultIfEmpty(Optional.empty())
+            .toFlux()
+            .flatMap { auth ->
+                logger.info("Authentication {}", auth)
+
+                dojoRepository.findAll().map {
+                    val isAdmin: Boolean = false
+                    if (!isAdmin) {
+                        val copy: DatePoll? = it.poll?.copy(adminDatePollUrl = "")
+                        return@map it.copy(poll = copy)
+                    }
+                    it
+                }
+            }
     }
 
-   @PostMapping
+    @PostMapping
     fun create(@RequestBody dojo: Dojo): Mono<Dojo> {
         return dojoRepository.save(dojo)
     }
