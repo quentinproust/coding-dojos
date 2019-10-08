@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { List, Button } from 'semantic-ui-react';
+import { List, Button, Popup, Image } from 'semantic-ui-react';
 import { UserContext } from '../../user/UserContext';
 import { Authenticated } from '../../user/WithUser';
 
@@ -11,6 +11,20 @@ const ListSubject = ({ subjects, toggleVote }) => {
     </List>
   )
 }
+
+
+const ListIntertedPers = ({interested}) => {
+  return <>
+  {interested.map(person =>
+    <Popup trigger={<Image src={'https://i.pravatar.cc/' + person} avatar />} flowing hoverable>
+      {person}
+    </Popup>
+
+  )}
+  </>
+}
+
+
 
 const SubjectItem = ({ subject, toggleVote }) => {
 
@@ -24,6 +38,7 @@ const SubjectItem = ({ subject, toggleVote }) => {
 
       <List.Content>{subject.theme} </List.Content>
 
+      <List.Content><ListIntertedPers interested={subject.interested}/></List.Content>
     </List.Item>
   )
 }
