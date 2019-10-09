@@ -62,9 +62,11 @@ class SecurityConfig {
             .pathMatchers("/api/**").authenticated()
             .anyExchange().permitAll()
             .and().oauth2Login()
-            .and().logout().logoutSuccessHandler(RedirectServerLogoutSuccessHandler().also {
+            .and().logout()
+            .logoutSuccessHandler(RedirectServerLogoutSuccessHandler().also {
                 it.setLogoutSuccessUrl(URI("/"))
             })
+            .requiresLogout(ServerWebExchangeMatchers.pathMatchers("/logout"))
             .and().exceptionHandling().authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
             .and()
             .securityContextRepository(AdditionnalRolesServerSecurityContextRepository(admins = admins.split(",")))
