@@ -30,6 +30,7 @@ class RoutingConfiguration {
     val notApi = RequestPredicates.path("/api/**")
         .or(RequestPredicates.path("/oauth2/authorization/**"))
         .or(RequestPredicates.path("/logout"))
+        .or(RequestPredicates.path("/sponsored/login/**"))
         .negate();
 
     @ConditionalOnProperty(name = ["application.client.from-parcel"], havingValue = "true")

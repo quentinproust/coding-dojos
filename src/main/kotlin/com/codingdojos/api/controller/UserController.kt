@@ -1,11 +1,11 @@
 package com.codingdojos.api.controller
 
+import com.codingdojos.api.infra.SponsoredJwtAuthentication
 import com.codingdojos.api.service.user.UserInfo
 import com.codingdojos.api.service.user.UserInfoService
 import com.codingdojos.api.service.user.mapAuthenticationToUserInfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ResolvableType
@@ -49,11 +49,9 @@ class UserController {
             .defaultIfEmpty(Optional.empty())
             .map { authenticationOpt ->
                 authenticationOpt.map<UserInfoDto> {
-                    UserInfoDto.OAuthAuthenticated(
-                        listAdmin.contains(it.details),
+                    UserInfoDto.Authenticated(
                         when (it) {
-                            is OAuth2AuthenticationToken -> {
-                                LoggerFactory.getLogger(this.javaClass).info("USer info : {}", it)
+                            is SponsoredJwtAuthentication, is OAuth2AuthenticationToken -> {
                                 mapAuthenticationToUserInfo(it)
                             }
                             else -> throw RuntimeException("$it is not supported")
@@ -68,7 +66,7 @@ class UserController {
 
     sealed class UserInfoDto(val authenticated: Boolean) {
         object NotAuthenticated : UserInfoDto(false)
-        data class OAuthAuthenticated(val admin: Boolean, val attributes: UserInfo) : UserInfoDto(true)
+        data class Authenticated(val attributes: UserInfo) : UserInfoDto(true)
     }
 
     @GetMapping(
