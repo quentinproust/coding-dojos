@@ -37,7 +37,7 @@ class SubjectController @Autowired constructor(
     }
 
     @PostMapping("/{subjectId}/interest") // FIXE ME pas toptop le path
-    fun create(
+    fun interest(
         @PathVariable subjectId: String,
         @RegisteredOAuth2AuthorizedClient client: OAuth2AuthorizedClient
     ): Mono<Subject> {
