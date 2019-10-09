@@ -8,14 +8,13 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 data class UserInfo(
     val sub: String,
     val name: String,
-    @get:JsonProperty("given_name") val givenName: String,
-        @get:JsonProperty("family_name") val familyName: String,
-        val profile: String?,
-    val picture: String,
-        val email: String,
-        @get:JsonProperty("email_verified") val emailVerified: Boolean,
-        val isAdmin: Boolean = false,
-        val hd: String?
+    val profile: String? = null,
+    val picture: String? = null,
+    val email: String,
+    @get:JsonProperty("email_verified") val emailVerified: Boolean,
+    val isAdmin: Boolean = false,
+    val hd: String? = null,
+    val grantedAuthorities: List<String> = emptyList()
 )
 
 fun mapAuthenticationToUserInfo(auth: Authentication): UserInfo {
@@ -38,7 +37,6 @@ private fun mapAttributesToUserInfo(auth: OAuth2AuthenticationToken): UserInfo {
         email = attributes["email"] as String,
         emailVerified = attributes["email_verified"] as Boolean,
         hd = attributes["hd"] as String?,
-        familyName = "",
-        givenName = ""
+        grantedAuthorities = auth.authorities.map { it.authority }
     )
 }

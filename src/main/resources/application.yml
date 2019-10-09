@@ -4,6 +4,9 @@ application:
     location: ${CLIENT_LOCATION:http://localhost:1234}
     from-parcel: ${FROM_PARCEL:false}
 
+logging.level:
+  root: INFO
+
 spring:
   security:
     oauth2:

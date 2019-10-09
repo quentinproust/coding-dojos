@@ -1,5 +1,6 @@
 package com.codingdojos.api.controller
 
+import com.codingdojos.api.infra.ADMIN_AUTHORITY
 import com.codingdojos.api.model.DatePoll
 import com.codingdojos.api.model.Dojo
 import com.codingdojos.api.repository.DojoReactiveRepository
@@ -24,21 +25,13 @@ class DojoController @Autowired constructor(
 
     @GetMapping
     fun list(): Flux<Dojo> {
-        logger.info("Get dojos")
-
         return ReactiveSecurityContextHolder.getContext()
-            .map {
-                logger.info("Context {}", it)
-                it
-            }
             .map { Optional.of(it.authentication) }
             .defaultIfEmpty(Optional.empty())
             .toFlux()
             .flatMap { auth ->
-                logger.info("Authentication {}", auth)
-
                 dojoRepository.findAll().map {
-                    val isAdmin: Boolean = false
+                    val isAdmin = auth.map { it.authorities.contains(ADMIN_AUTHORITY) }.orElse(false)
                     if (!isAdmin) {
                         val copy: DatePoll? = it.poll?.copy(adminDatePollUrl = "")
                         return@map it.copy(poll = copy)
@@ -53,77 +46,4 @@ class DojoController @Autowired constructor(
         return dojoRepository.save(dojo)
     }
 
-/* 
-    @PutMapping
-    fun save(@RequestBody dojo: Dojo): Mono<Dojo> {
-        return dojoRepository.existsById(dojo.id)
-            .flatMap { exists ->
-                when (exists) {
-                    true -> dojoRepository.save(dojo)
-                    false -> Mono.error(RuntimeException("dojo ${dojo.id} was not found"))
-                }
-            }
-    }
-
-    @PostMapping("/{dojoId}/interests")
-    fun interested(
-        @PathVariable dojoId: String,
-        @RequestBody payload: JsonNode,
-        @RegisteredOAuth2AuthorizedClient client: OAuth2AuthorizedClient
-    ): Mono<Dojo> {
-        val interested = payload.get("interested").asBoolean()
-
-        return dojoRepository.findById(dojoId)
-            .switchIfEmpty(Mono.error<Dojo>(RuntimeException("No dojo found for $dojoId")))
-            .zipWith(userInfoService.of(client))
-            .flatMap { (dojo, user) ->
-                dojoRepository.save(dojo.copy(interested = dojo.interested
-                    .filter { it.name != user.name }
-                    .plus(InterestedVote(
-                        name = user.name,
-                        interested = interested
-                    ))))
-            }
-    }
-
-    @PostMapping("/{dojoId}/external_date_poll")
-fun saveExternalDatePoll(
-        @PathVariable dojoId: String,
-        @Valid @RequestBody payload: ExternalDatePollInput
-    ): Mono<Dojo> {
-        return dojoRepository.findById(dojoId)
-            .switchIfEmpty(Mono.error<Dojo>(RuntimeException("No dojo found for $dojoId")))
-            .flatMap {
-                dojoRepository.save(it.copy(
-                    status = DojoStatus.PollInProgress,
-                    poll = DatePoll(externalDatePoll = payload.uri)
-                ))
-            }
-    }
-
-    data class ExternalDatePollInput(
-        @NotBlank
-        val uri: String
-    )
-
-    @PostMapping("/{dojoId}/time_slot")
-    fun saveTimeSlot(
-        @PathVariable dojoId: String,
-        @Valid @RequestBody payload: TimeSlotInput
-    ): Mono<Dojo> {
-        return dojoRepository.findById(dojoId)
-            .switchIfEmpty(Mono.error<Dojo>(RuntimeException("No dojo found for $dojoId")))
-            .flatMap {
-                dojoRepository.save(it.copy(
-                    status = DojoStatus.Scheduled,
-                    timeSlot = payload.timeSlot
-                ))
-            }
-    }
-
-    data class TimeSlotInput(
-        @NotBlank
-        val timeSlot: String
-    )
-    */
 }

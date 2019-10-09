@@ -3,6 +3,7 @@ package com.codingdojos.api.infra
 import com.codingdojos.api.service.user.UserInfo
 import com.codingdojos.api.service.user.mapAuthenticationToUserInfo
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.http.HttpMethod.GET
@@ -10,10 +11,16 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextImpl
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler
+import org.springframework.security.web.server.context.ServerSecurityContextRepository
+import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers
 import org.springframework.stereotype.Repository
 import org.springframework.web.server.ServerWebExchange
@@ -25,8 +32,13 @@ import java.net.URI
 
 @EnableWebFluxSecurity
 class SecurityConfig {
+
     @Autowired
     lateinit var userRepository: PersistedUserInfoReactiveRepository
+
+    @Autowired
+    @Value("\${profile.user.admin}")
+    lateinit var admins: String
 
     @Bean
     fun configure(http: ServerHttpSecurity): SecurityWebFilterChain {
@@ -45,8 +57,41 @@ class SecurityConfig {
                 it.setLogoutSuccessUrl(URI("/"))
             })
             .and().exceptionHandling().authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
-            .and().addFilterAt(PersistUserWebFilter(userRepository), SecurityWebFiltersOrder.AUTHENTICATION)
+            .and()
+            .securityContextRepository(AdditionnalRolesServerSecurityContextRepository(admins = admins.split(",")))
+            .addFilterAt(PersistUserWebFilter(userRepository), SecurityWebFiltersOrder.AUTHENTICATION)
             .build()
+    }
+}
+
+val ADMIN_AUTHORITY = SimpleGrantedAuthority("ADMIN")
+
+class AdditionnalRolesServerSecurityContextRepository(
+    private val inner: ServerSecurityContextRepository = WebSessionServerSecurityContextRepository(),
+    private val admins: List<String>
+) : ServerSecurityContextRepository by inner {
+    override fun load(exchange: ServerWebExchange): Mono<SecurityContext> {
+        return inner.load(exchange)
+            .map { context ->
+                val auth = context.authentication
+                when (auth) {
+                    is OAuth2AuthenticationToken -> {
+                        val isAdmin = admins.contains(auth.principal.attributes["email"])
+                        val authorities = if (isAdmin) {
+                            auth.authorities.plus(ADMIN_AUTHORITY)
+                        } else {
+                            auth.authorities
+                        }
+                        val newAuth = OAuth2AuthenticationToken(
+                            auth.principal,
+                            authorities,
+                            auth.authorizedClientRegistrationId
+                        )
+                        SecurityContextImpl(newAuth)
+                    }
+                    else -> context
+                }
+            }
     }
 }
 
