@@ -13,7 +13,6 @@ export default () => {
   const [subjects, setSubjects] = React.useState([]);
   const [dojos, setDojos] = React.useState([]);
   const [errors, setErrors] = React.useState([]);
-  const [reloadplease, setreloadplease] = React.useState(true);
   
   const actions = useServices(s => ({
     toggleInterest: s.subjectService.toggleInterest,
@@ -24,7 +23,15 @@ export default () => {
   const toggleVote = (id) => {
     actions.toggleInterest(id)
       .then(response =>
-        setreloadplease(!reloadplease) // TODO c'est degueu
+        {
+        let index = subjects.findIndex(subject => subject.id === id  )
+        if ( index === -1) {
+          console.log("ERROR", "TODO A GERER !")
+        }else{
+          subjects.splice(index, 1, response)
+          setSubjects( [...subjects]) 
+        }
+      }
       )
 
   }
@@ -37,7 +44,6 @@ export default () => {
     actions.getListSubject()
       .then(listeSubject => {
         setSubjects(listeSubject)
-        console.log('getListSubject - je met des Subjects ')
       }
       ).catch(error => {
         let newErrors = errors
@@ -45,7 +51,7 @@ export default () => {
         setErrors(newErrors)
       }
       )
-  }, [reloadplease]);
+  }, []);
 
   React.useEffect(() => {
     actions.getListDojo()
@@ -94,12 +100,12 @@ export default () => {
 
           </Grid.Column>
           <Grid.Column width={6}>
-            {dojo && (
+            {subjects && (
               <Segment>
                 <ListSubject subjects={subjects} toggleVote={toggleVote} />
               </Segment>
             )}
-            {!dojo && (
+            {!subjects && (
               <Message
                 icon='meh'
                 content={`Pas de sujets de dojo pour le moment. D'autres sujets arriveront bientôt ...`}
