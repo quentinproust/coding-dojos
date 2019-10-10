@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 
-import { Segment, List, Icon, Step, Message, Item } from 'semantic-ui-react'
+import { Segment, List, Icon, Step, Message, Divider, Header } from 'semantic-ui-react'
 
 const Stepper = ({ step }) => {
 
@@ -21,7 +21,6 @@ const Stepper = ({ step }) => {
     </Message>
   )
   const getstatutEtape = (index, noEtape) => {
-    console.log("index" + index, "noEtape" + noEtape)
     if (index === noEtape) return true
     return false
 
@@ -60,47 +59,72 @@ const Stepper = ({ step }) => {
 }
 
 const GiveMeTheDate = ({ dojo }) => {
-
   let statusIndex = ["Canceled", "Proposed", "PollInProgress", "Scheduled", "Done"].indexOf(dojo.status)
   if (statusIndex < 0) return <>N/A</>
   if (statusIndex < 2) return <>Un sondage sera bientôt disponible</>
   if (statusIndex === 2) return <><a target="blank" href={dojo.poll.datePollUrl}>Répondez au sondage</a> </>
-  return <>{dojo.date}</>
+  return <>{dojo.date && dojo.date}{!dojo.date && 
+    <Message error
+    content={`Oups aucune date n'a été spécifiée.`}
+  />}</>
+}
+
+const GiveMeTheSubject = ({ subject }) => {
+
+  return (
+    <>
+      {!subject && (
+        <Message
+          icon='meh'
+          content={`Le sujet du dojo n'a pas encore été sélectionné. Pensez à voter pour les sujets.`}
+        />
+      )}
+      {subject && (
+        <>
+          Le theme du CodingDojo est <br/>
+          <Header as='h3'><Icon name="terminal"/>{subject.theme}</Header>
+        
+          <br/>
+        </>
+      )}
+    </>
+  )
 }
 
 
 
 const Dojo = ({ dojo }) => {
   return (
-    <Segment>
-      <Item>
+    <Segment textAlign='center' >
+      <Header as='h2' icon textAlign='center'>
+        <Header.Content>{dojo.label}</Header.Content>
+      </Header>
+      <Segment.Inline>
+        <GiveMeTheSubject subject={dojo.subject} />
+      </Segment.Inline>
+      <Divider horizontal>
+      <Header as='h4'>
+        <Icon name='map marker alternate' />
+        Lieu
+      </Header>
+    </Divider>
+      <Segment.Inline>
+        {dojo.location}
+      </Segment.Inline>
+      <Divider horizontal>
+      <Header as='h4'>
+        <Icon name='calendar alternate' />
+        Date
+      </Header>
+    </Divider>
+      <Segment.Inline>
+        <GiveMeTheDate dojo={dojo} />
 
-        <Item.Content>
-          <Item.Header><h2>{dojo.label}</h2></Item.Header>
-          <Item.Meta>{!dojo.subject && (
-            <Message
-              icon='meh'
-              content={`Le sujet du dojo n'a pas encore été sélectionné. Pensez à voter pour les sujets.`}
-            />
-          )}</Item.Meta>
-          <List>
-            <List.Item>
-              <List.Icon name='marker' />
-              <List.Content>{dojo.location}</List.Content>
-            </List.Item>
-            <List.Item>
-              <List.Icon name='calendar' />
-              <List.Content>
-                <GiveMeTheDate dojo={dojo} />
-              </List.Content>
-            </List.Item>
-
-          </List>
-          <Item.Extra> </Item.Extra>
-        </Item.Content>
-      </Item>
+      </Segment.Inline>
       <Stepper step={dojo.status}></Stepper>
     </Segment>
+
+
   )
 }
 
