@@ -24,6 +24,8 @@ dependencies {
 	// https://www.baeldung.com/spring-oauth-login-webflux
 	implementation("org.springframework.security:spring-security-oauth2-client")
 
+    implementation("com.auth0:java-jwt:3.8.3")
+
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

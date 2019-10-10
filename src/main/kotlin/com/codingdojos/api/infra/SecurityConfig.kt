@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.http.HttpMethod.GET
+import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
@@ -32,6 +33,9 @@ import java.net.URI
 
 @EnableWebFluxSecurity
 class SecurityConfig {
+    @Autowired
+    lateinit var jwtAuthentificationService: JwtAuthentificationService
+
 
     @Autowired
     lateinit var userRepository: PersistedUserInfoReactiveRepository
@@ -42,6 +46,10 @@ class SecurityConfig {
 
     @Bean
     fun configure(http: ServerHttpSecurity): SecurityWebFilterChain {
+        val sponsoredAuthenticationFilter = sponsoredAuthenticationFilterFactory(
+            jwtAuthentificationService
+        )
+
         return http
             .csrf().disable()
             .authorizeExchange()
@@ -50,16 +58,20 @@ class SecurityConfig {
             .pathMatchers(GET, "/api/dojos").permitAll()
             .pathMatchers(GET, "/api/subjects").permitAll()
             .pathMatchers(GET, "/api/users/current").permitAll()
+            .pathMatchers(POST, "/api/sponsored_token").permitAll()
             .pathMatchers("/api/**").authenticated()
             .anyExchange().permitAll()
             .and().oauth2Login()
-            .and().logout().logoutSuccessHandler(RedirectServerLogoutSuccessHandler().also {
+            .and().logout()
+            .logoutSuccessHandler(RedirectServerLogoutSuccessHandler().also {
                 it.setLogoutSuccessUrl(URI("/"))
             })
+            .requiresLogout(ServerWebExchangeMatchers.pathMatchers("/logout"))
             .and().exceptionHandling().authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
             .and()
             .securityContextRepository(AdditionnalRolesServerSecurityContextRepository(admins = admins.split(",")))
             .addFilterAt(PersistUserWebFilter(userRepository), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAt(sponsoredAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build()
     }
 }
@@ -99,7 +111,7 @@ class AdditionnalRolesServerSecurityContextRepository(
 interface PersistedUserInfoReactiveRepository : ReactiveMongoRepository<UserInfo, String>
 
 class PersistUserWebFilter(
-    val persistence: PersistedUserInfoReactiveRepository
+    private val persistence: PersistedUserInfoReactiveRepository
 ) : WebFilter {
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
         return ServerWebExchangeMatchers.pathMatchers("/login/oauth2/code/**").matches(exchange)

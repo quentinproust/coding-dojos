@@ -1,20 +1,21 @@
 package com.codingdojos.api.service.user
 
+import com.codingdojos.api.infra.SponsoredJwtAuthentication
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 
 data class UserInfo(
-    val sub: String,
-    val name: String,
-    val profile: String? = null,
-    val picture: String? = null,
-    val email: String,
-    @get:JsonProperty("email_verified") val emailVerified: Boolean,
-    val isAdmin: Boolean = false,
-    val hd: String? = null,
-    val grantedAuthorities: List<String> = emptyList()
+        val sub: String,
+        val name: String,
+        val profile: String? = null,
+        val picture: String? = null,
+        val email: String,
+        @get:JsonProperty("email_verified") val emailVerified: Boolean,
+        val isAdmin: Boolean = false,
+        val hd: String? = null,
+        val grantedAuthorities: List<String> = emptyList()
 )
 
 fun mapAuthenticationToUserInfo(auth: Authentication): UserInfo {
@@ -22,6 +23,16 @@ fun mapAuthenticationToUserInfo(auth: Authentication): UserInfo {
         is OAuth2AuthenticationToken -> {
             LoggerFactory.getLogger(UserInfo::class.java).info("User info : {}", auth)
             mapAttributesToUserInfo(auth)
+        }
+        is SponsoredJwtAuthentication -> {
+            UserInfo(
+                sub = auth.jwtToken,
+                name = auth.sponsoredUser.name ?: auth.sponsoredUser.email,
+                email = auth.sponsoredUser.email,
+                emailVerified = true,
+                isAdmin = false,
+                hd = auth.sponsoredUser.company
+            )
         }
         else -> throw RuntimeException("$auth is not supported")
     }

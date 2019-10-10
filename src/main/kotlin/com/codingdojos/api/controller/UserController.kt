@@ -1,10 +1,11 @@
 package com.codingdojos.api.controller
 
+import com.codingdojos.api.infra.SponsoredJwtAuthentication
 import com.codingdojos.api.service.user.UserInfo
 import com.codingdojos.api.service.user.UserInfoService
+import com.codingdojos.api.service.user.mapAuthenticationToUserInfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ResolvableType
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 import java.util.*
-
 
 @RestController
 @RequestMapping(path = ["/api/users"])
@@ -49,12 +49,10 @@ class UserController {
             .defaultIfEmpty(Optional.empty())
             .map { authenticationOpt ->
                 authenticationOpt.map<UserInfoDto> {
-                    UserInfoDto.OAuthAuthenticated(
-                        listAdmin.contains(it.details),
+                    UserInfoDto.Authenticated(
                         when (it) {
-                            is OAuth2AuthenticationToken -> {
-                                LoggerFactory.getLogger(this.javaClass).info("USer info : {}", it)
-                                mapAttributesToUserInfo(it)
+                            is SponsoredJwtAuthentication, is OAuth2AuthenticationToken -> {
+                                mapAuthenticationToUserInfo(it)
                             }
                             else -> throw RuntimeException("$it is not supported")
                         }
@@ -66,23 +64,9 @@ class UserController {
             }
     }
 
-    fun mapAttributesToUserInfo(auth: OAuth2AuthenticationToken): UserInfo {
-        val attributes = auth.principal.attributes
-        return UserInfo(
-            sub = attributes["sub"] as String,
-            name = attributes["name"] as String,
-            profile = attributes["profile"] as String?,
-            picture = attributes["picture"] as String,
-            email = attributes["email"] as String,
-            emailVerified = attributes["email_verified"] as Boolean,
-            hd = attributes["hd"] as String?,
-            grantedAuthorities = auth.authorities.map { it.authority }
-        )
-    }
-
     sealed class UserInfoDto(val authenticated: Boolean) {
         object NotAuthenticated : UserInfoDto(false)
-        data class OAuthAuthenticated(val admin: Boolean, val attributes: UserInfo) : UserInfoDto(true)
+        data class Authenticated(val attributes: UserInfo) : UserInfoDto(true)
     }
 
     @GetMapping(
