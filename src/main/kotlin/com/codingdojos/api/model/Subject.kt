@@ -7,5 +7,5 @@ data class Subject(
         val id: String = UUID.randomUUID().toString(),
         val active: Boolean = true,
         val theme: String,
-        val interested: List<String> = emptyList()
+        val interested: List<Coder> = emptyList()
 )

@@ -14,14 +14,16 @@ const ListSubject = ({ subjects, toggleVote }) => {
 const SubjectItem = ({ subject, toggleVote }) => {
   const { user: { sub: yourSub } } = React.useContext(UserContext);
 
+  const hasVoted = subject.interested.some(i => i.sub === yourSub);
+
   return (
     <List.Item>
       <List.Content floated='right'>
         <Button
-          color={subject.interested.includes(yourSub) ? 'green' : 'grey'}
+          color={hasVoted ? 'green' : 'grey'}
           icon={'thumbs up outline'}
           onClick={() => toggleVote(subject.id)}
-          label={{ basic: true, color: subject.interested.includes(yourSub) ? 'green' : 'grey', pointing: 'left', content: subject.interested.length }}
+          label={{ basic: true, color: hasVoted ? 'green' : 'grey', pointing: 'left', content: subject.interested.length }}
         />
       </List.Content>
 

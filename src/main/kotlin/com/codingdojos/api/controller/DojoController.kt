@@ -1,7 +1,7 @@
 package com.codingdojos.api.controller
 
 import com.codingdojos.api.extensions.ReactiveSecurityContextHolder
-import com.codingdojos.api.infra.ADMIN_AUTHORITY
+import com.codingdojos.api.infra.Capability
 import com.codingdojos.api.model.DatePoll
 import com.codingdojos.api.model.Dojo
 import com.codingdojos.api.repository.DojoReactiveRepository
@@ -26,7 +26,7 @@ class DojoController @Autowired constructor(
         return ReactiveSecurityContextHolder.getAuthentication()
             .flatMapMany { auth ->
                 dojoRepository.findAll().map {
-                    val isAdmin = auth.map { it.authorities.contains(ADMIN_AUTHORITY) }.orElse(false)
+                    val isAdmin = auth.map { it.authorities.contains(Capability.ADMIN.authority) }.orElse(false)
                     if (!isAdmin) {
                         val copy: DatePoll? = it.poll?.copy(adminDatePollUrl = "")
                         return@map it.copy(poll = copy)

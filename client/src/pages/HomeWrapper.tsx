@@ -100,12 +100,12 @@ export default () => {
 
           </Grid.Column>
           <Grid.Column width={6}>
-            {subjects && (
+            {subjects.length > 0 && (
               <Segment>
                 <ListSubject subjects={subjects} toggleVote={toggleVote} />
               </Segment>
             )}
-            {!subjects && (
+            {subjects.length == 0 && (
               <Message
                 icon='meh'
                 content={`Pas de sujets de dojo pour le moment. D'autres sujets arriveront bientôt ...`}

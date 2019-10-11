@@ -17,18 +17,23 @@ import java.util.*
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import com.codingdojos.api.extensions.*
+import com.codingdojos.api.model.toCoder
 
 
 @RestController
 @RequestMapping("/api/subjects")
 class SubjectController @Autowired constructor(
-    val subjectRepository: SubjectReactiveRepository,
-    val userInfoService: UserInfoService
+    val subjectRepository: SubjectReactiveRepository
 ) {
 
     @GetMapping
     fun list(): Flux<Subject> {
-       return subjectRepository.findAll()
+        return subjectRepository.findAll()
+    }
+
+    @GetMapping("/{id}")
+    fun get(@PathVariable id: String): Mono<Subject> {
+        return subjectRepository.findById(id)
     }
 
     @PostMapping
@@ -38,20 +43,20 @@ class SubjectController @Autowired constructor(
 
     @PostMapping("/{subjectId}/interest") // FIXE ME pas toptop le path
     fun interest(
-        @PathVariable subjectId: String,
-        @RegisteredOAuth2AuthorizedClient client: OAuth2AuthorizedClient
+        @PathVariable subjectId: String
     ): Mono<Subject> {
         return subjectRepository.findById(subjectId)
             .switchIfEmpty(Mono.error<Subject>(RuntimeException("No subject found for $subjectId")))
-            .zipWith(userInfoService.of(client))
-            .flatMap { (subject, user) ->
-                val isAlreadyInList = subject.interested.contains(user.sub)
-                val newInterests = if (isAlreadyInList) {
-                    subject.interested.filter { it != user.sub }
-                } else {
-                    subject.interested.plus(user.sub)
-                }
+            .zipWith(ReactiveSecurityContextHolder.getCurrentAuthentication())
+            .flatMap { (subject, auth) ->
+                val coder = auth.toCoder()
 
+                val isAlreadyInList = subject.interested.any { it.sub == coder.sub }
+                val newInterests = if (isAlreadyInList) {
+                    subject.interested.filter { it.sub != coder.sub }
+                } else {
+                    subject.interested.plus(coder)
+                }
 
                 subjectRepository.save(subject.copy(interested = newInterests))
             }
@@ -69,7 +74,7 @@ class SubjectController @Autowired constructor(
     }
 
     @DeleteMapping("/{subjectId}")
-    fun deleteLogical(  @PathVariable subjectId: String): Mono<Subject> {
+    fun deleteLogical(@PathVariable subjectId: String): Mono<Subject> {
         return subjectRepository.findById(subjectId)
             .switchIfEmpty(Mono.error<Subject>(RuntimeException("No subject found for $subjectId")))
             .flatMap {

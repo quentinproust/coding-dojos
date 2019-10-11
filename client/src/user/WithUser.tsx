@@ -65,3 +65,13 @@ export const Authenticated = ({ children }) => {
     return null;
   }
 };
+
+export const WithRole = ({ role, children }) => {
+  const value = React.useContext(UserContext);
+
+  if (value.authenticated == AuthState.AUTHENTICATED && value.user.grantedAuthorities.includes(role)) {
+    return children; 
+  } else {
+    return null;
+  }
+};

@@ -3,11 +3,12 @@ import axios from 'axios';
 export class User {
   sub: string
   name: string
-  profile: string
-  picture: string
+  profile: string | null
+  picture: string | null
   email: string
   email_verified: boolean
-  hd: string
+  hd: string | null
+  grantedAuthorities: Array<string>
 }
 
 export class UserService {
