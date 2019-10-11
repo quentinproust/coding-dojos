@@ -2,6 +2,8 @@ package com.codingdojos.api.controller
 
 import com.codingdojos.api.extensions.ReactiveSecurityContextHolder
 import com.codingdojos.api.infra.Capability
+import com.codingdojos.api.exception.BadRequestException
+import com.codingdojos.api.infra.ADMIN_AUTHORITY
 import com.codingdojos.api.model.DatePoll
 import com.codingdojos.api.model.Dojo
 import com.codingdojos.api.model.Subject
@@ -54,19 +56,25 @@ class DojoController @Autowired constructor(
     @PostMapping(value = ["/{dojoId}/subject/affect/{subjectId}"])
     fun affectSubject ( @PathVariable dojoId: String, @PathVariable subjectId: String) :Mono<Dojo> {
         // TODO ONly for admin
+        logger.info("affect Subject with id {} to dojo with id {}.", subjectId, dojoId)
 
         return Mono.zip(dojoRepository.findById(dojoId), subjectRepository.findById(subjectId))
-        { t: Dojo, u: Subject? ->
+        { t: Dojo, u: Subject ->
+            logger.info("ERROR - DOJO {}.", t.toString())
+            logger.info("ERROR - Subject {}.", u.toString())
             if (u == null) {
-                //exeception 400 l'id xx subject inconnu        TODO
+                logger.info("ERROR - Subject with id {} not exist.", subjectId)
+                throw BadRequestException("message","code")
             }
             if (t == null) {
-                //exeception 400 l'id xx dojo inconnu           TODO
+                logger.info("ERROR - Dojo with id {} not exist.", dojoId)
+                throw BadRequestException("message","code")
             }
-            if (t.subject === null) {
-                //exception 400 le Dojo a deja un sujet            TODO
+            if (t.subject !== null) {
+                logger.info("ERROR - Dojo with id {} as already a subject.", dojoId)
+                throw BadRequestException("message","code")
             }
-
+            logger.info("all is good Subject with id {} to dojo with id {}.",  u.theme,t.label)
             return@zip t.copy(subject = u)
         }.flatMap {
             dojoRepository.save(it)

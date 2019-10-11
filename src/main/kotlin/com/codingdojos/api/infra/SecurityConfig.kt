@@ -56,6 +56,7 @@ class SecurityConfig {
             .pathMatchers("/api/users/available_authentications").permitAll()
             .pathMatchers("/api/users/authentications/**").permitAll()
             .pathMatchers(GET, "/api/dojos").permitAll()
+            .pathMatchers(POST, "/api/dojos/**").permitAll()
             .pathMatchers(GET, "/api/subjects").permitAll()
             .pathMatchers(GET, "/api/users/current").permitAll()
             .pathMatchers(POST, "/api/sponsored_token").permitAll()
