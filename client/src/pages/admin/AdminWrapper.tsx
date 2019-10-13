@@ -5,10 +5,10 @@ import { Link, useRouteMatch, Route } from 'react-router-dom';
 import SubjectsPage from './SubjectWrapper';
 import DojosPage from './DojoWrapper';
 import SubjectFormWrapper from './SubjectFormWrapper';
+import DojoFormWrapper from './DojoFormWrapper';
 
 export default () => {
   const { params: { activeItem } } = useRouteMatch("/admin/:activeItem") || { params: { activeItem: 'subjects' } };
-  console.log(activeItem)
 
   return (
     <Grid columns={2}>
@@ -25,6 +25,8 @@ export default () => {
           <Route path="/admin/subjects/new" exact component={SubjectFormWrapper} />
           <Route path="/admin/subjects/:id/edit" exact component={SubjectFormWrapper} />
           <Route path="/admin/dojos" exact component={DojosPage} />
+          <Route path="/admin/dojos/new" exact component={DojoFormWrapper} />
+          <Route path="/admin/dojos/:id/edit" exact component={DojoFormWrapper} />
         </Grid.Column>
       </Grid.Row>
     </Grid>

@@ -5,7 +5,7 @@ export function useAllServices() : Services {
   return useContext(ServiceLocatorContext);
 }
 
-export default function useServices(selector: (services: Services) => any) {
+export default function useServices<T>(selector: (services: Services) => T) : T {
   const context = useContext(ServiceLocatorContext);
   return selector(context);
 }
