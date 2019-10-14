@@ -31,25 +31,25 @@ const Stepper = ({ step }) => {
       <Step {...(getstatutEtape(myindex, 1) ? { active: true } : { disabled: true })} >
         <Icon name='save outline' />
         <Step.Content>
-          <Step.Title>Proposed </Step.Title>
+          <Step.Title>Proposé</Step.Title>
         </Step.Content>
       </Step>
       <Step {...(getstatutEtape(myindex, 2) ? { active: true } : { disabled: true })}>
         <Icon name='question circle' />
         <Step.Content>
-          <Step.Title>PollInProgress</Step.Title>
+          <Step.Title>Planification en cours</Step.Title>
         </Step.Content>
       </Step>
       <Step {...(getstatutEtape(myindex, 3) ? { active: true } : { disabled: true })}>
         <Icon name='calendar alternate' />
         <Step.Content>
-          <Step.Title>Sheduled</Step.Title>
+          <Step.Title>Planifié</Step.Title>
         </Step.Content>
       </Step>
       <Step {...(getstatutEtape(myindex, 4) ? { active: true } : { disabled: true })}>
         <Icon name='certificate' />
         <Step.Content>
-          <Step.Title>Done</Step.Title>
+          <Step.Title>Effectué</Step.Title>
         </Step.Content>
       </Step>
 

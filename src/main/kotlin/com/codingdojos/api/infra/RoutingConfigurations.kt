@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates.conten
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.core.io.ClassPathResource
+import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.web.reactive.function.server.RouterFunctions.resources
 
 
@@ -49,7 +50,7 @@ class RoutingConfiguration {
                                     it[key] = values
                                 }
                             }
-                            .body(BodyInserters.fromPublisher(response.bodyToMono(String::class.java), String::class.java))
+                            .body(BodyInserters.fromPublisher(response.bodyToFlux(DataBuffer::class.java), DataBuffer::class.java))
                     }
             }
         )
