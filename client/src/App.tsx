@@ -12,49 +12,46 @@ import {
 } from 'semantic-ui-react'
 import HomeWrapper from './pages/HomeWrapper';
 import AdminWrapper from './pages/admin/AdminWrapper';
-
+import { WithErrors } from './errors/WithErrors';
 
 export const App = () => {
   return (
     <Router>
       <WithUser>
-        <div>
-          <Menu fixed='top' inverted style={{ backgroundColor: '#1768b1' }}>
-            <Container>
-              <Menu.Item header>
-                <Image src='https://www.serli.com/wp-content/themes/serli/dist/images/main-logo.png' size='small' style={{ marginRight: 10 }} />
-                <Icon name='lab' /> Coding Dojos
+        <WithErrors>
+          <div>
+            <Menu fixed='top' inverted style={{ backgroundColor: '#1768b1' }}>
+              <Container>
+                <Menu.Item header>
+                  <Image src='https://www.serli.com/wp-content/themes/serli/dist/images/main-logo.png' size='small' style={{ marginRight: 10 }} />
+                  <Icon name='lab' /> Coding Dojos
               </Menu.Item>
-              <Menu.Item as={Link} to="/">Home</Menu.Item>
-              <WithRole role="ADMIN">
-              <Menu.Item as={Link} to="/admin">Admin</Menu.Item>
-              </WithRole>
-              <Anonymous>
-                <Menu.Item position='right' as='a' href="/oauth2/authorization/google">
-                  Login
+                <Menu.Item as={Link} to="/">Home</Menu.Item>
+                <WithRole role="ADMIN">
+                  <Menu.Item as={Link} to="/admin">Admin</Menu.Item>
+                </WithRole>
+                <Anonymous>
+                  <Menu.Item position='right' as='a' href="/oauth2/authorization/google">
+                    Login
                 </Menu.Item>
-              </Anonymous>
-              <Authenticated>
-                <Menu.Item position='right'>
-                  <UserInfo />
+                </Anonymous>
+                <Authenticated>
+                  <Menu.Item position='right'>
+                    <UserInfo />
+                  </Menu.Item>
+                  <Menu.Item as='a' href="/logout">
+                    Logout
                 </Menu.Item>
-                <Menu.Item as='a' href="/logout">
-                  Logout
-                </Menu.Item>
-              </Authenticated>
+                </Authenticated>
+              </Container>
+            </Menu>
+            <Container style={{ marginTop: '7em' }}>
+              <Route path="/" exact component={HomeWrapper} />
+              <RoleBasedRoute path="/admin" role="ADMIN" component={AdminWrapper} />
             </Container>
-          </Menu>
-          <Container style={{ marginTop: '7em' }}>
-            <Route path="/" exact component={HomeWrapper} />
-            <RoleBasedRoute path="/admin" role="ADMIN" component={AdminWrapper} />
-              {/*
-            <AuthenticatedRoute path="/dojos/new" exact component={NewDojoForm} />
-            <AuthenticatedRoute path="/dojos/:dojoId/link-date-poll" component={StartSchedule} />
-            <AuthenticatedRoute path="/dojos/:dojoId/select-time-slot" component={SelectTimeSlot} />
-  */}
-          </Container>
-        </div>
+          </div>
+        </WithErrors>
       </WithUser>
     </Router>
-      );
-    }
+  );
+}

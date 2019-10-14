@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { List, Button } from 'semantic-ui-react';
 import { UserContext } from '../../user/UserContext';
+import { Authenticated } from '../../user/WithUser';
 
 const ListSubject = ({ subjects, toggleVote }) => {
   return (
@@ -12,25 +13,34 @@ const ListSubject = ({ subjects, toggleVote }) => {
 }
 
 const SubjectItem = ({ subject, toggleVote }) => {
-  const { user: { sub: yourSub } } = React.useContext(UserContext);
-
-  const hasVoted = subject.interested.some(i => i.sub === yourSub);
 
   return (
     <List.Item>
-      <List.Content floated='right'>
-        <Button
-          color={hasVoted ? 'green' : 'grey'}
-          icon={'thumbs up outline'}
-          onClick={() => toggleVote(subject.id)}
-          label={{ basic: true, color: hasVoted ? 'green' : 'grey', pointing: 'left', content: subject.interested.length }}
-        />
-      </List.Content>
+      <Authenticated>
+        <List.Content floated='right'>
+          <InterestedButton subject={subject} toggleVote={toggleVote} />
+        </List.Content>
+      </Authenticated>
 
       <List.Content>{subject.theme} </List.Content>
 
     </List.Item>
   )
+}
+
+const InterestedButton = ({ subject, toggleVote }) => {
+  const { user: { sub: yourSub } } = React.useContext(UserContext);
+
+  const hasVoted = subject.interested.some(i => i.sub === yourSub);
+
+  return (
+    <Button
+      color={hasVoted ? 'green' : 'grey'}
+      icon={'thumbs up outline'}
+      onClick={() => toggleVote(subject.id)}
+      label={{ basic: true, color: hasVoted ? 'green' : 'grey', pointing: 'left', content: subject.interested.length }}
+    />
+  );
 }
 
 export default ListSubject;
