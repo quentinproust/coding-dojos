@@ -2,7 +2,6 @@ package com.codingdojos.api.service.user
 
 import com.codingdojos.api.infra.SponsoredJwtAuthentication
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 
@@ -21,7 +20,6 @@ data class UserInfo(
 fun mapAuthenticationToUserInfo(auth: Authentication): UserInfo {
     return when (auth) {
         is OAuth2AuthenticationToken -> {
-            LoggerFactory.getLogger(UserInfo::class.java).info("User info : {}", auth)
             mapAttributesToUserInfo(auth)
         }
         is SponsoredJwtAuthentication -> {

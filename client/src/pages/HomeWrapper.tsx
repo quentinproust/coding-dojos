@@ -1,8 +1,9 @@
 import * as React from 'react';
 import uuid from "uuid";
-import { Segment, Grid, Message } from 'semantic-ui-react'
+import { Segment, Grid, Message, Header } from 'semantic-ui-react'
 
-import Dojo from '../components/dojos/dojos'
+import Dojo from '../components/dojos/Dojos'
+import CurrentDojo from '../components/dojos/CurrentDojo'
 import ListSubject from '../components/subjects/subjects';
 import { Authenticated, Anonymous } from '../user/WithUser';
 import { useServices } from '../services';
@@ -89,7 +90,7 @@ export default () => {
         <Authenticated>
           <Grid.Column width={10}>
             {dojo && (
-              <Dojo dojo={dojo} />
+              <CurrentDojo dojo={dojo} />
             )}
             {!dojo && (
               <Message
@@ -98,14 +99,22 @@ export default () => {
               />
             )}
 
+            {dojos.slice(1).length > 0 && (
+              <>
+                <Header>Précédents dojos</Header>
+                {dojos.slice(1).map(d => (
+                  <Dojo key={d.id} dojo={d} />
+                ))}
+              </>
+            )}
           </Grid.Column>
           <Grid.Column width={6}>
-            {subjects && (
+            {subjects.length > 0 && (
               <Segment>
                 <ListSubject subjects={subjects} toggleVote={toggleVote} />
               </Segment>
             )}
-            {!subjects && (
+            {subjects.length == 0 && (
               <Message
                 icon='meh'
                 content={`Pas de sujets de dojo pour le moment. D'autres sujets arriveront bientôt ...`}

@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { WithUser, Anonymous, Authenticated } from './user/WithUser';
+import { WithUser, Anonymous, Authenticated, WithRole } from './user/WithUser';
 import { UserInfo } from './user/UserInfo';
-
+import { RoleBasedRoute } from './routing';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 
 import {
@@ -11,6 +11,8 @@ import {
   Image,
 } from 'semantic-ui-react'
 import HomeWrapper from './pages/HomeWrapper';
+import AdminWrapper from './pages/admin/AdminWrapper';
+
 
 export const App = () => {
   return (
@@ -24,6 +26,9 @@ export const App = () => {
                 <Icon name='lab' /> Coding Dojos
               </Menu.Item>
               <Menu.Item as={Link} to="/">Home</Menu.Item>
+              <WithRole role="ADMIN">
+              <Menu.Item as={Link} to="/admin">Admin</Menu.Item>
+              </WithRole>
               <Anonymous>
                 <Menu.Item position='right' as='a' href="/oauth2/authorization/google">
                   Login
@@ -39,9 +44,10 @@ export const App = () => {
               </Authenticated>
             </Container>
           </Menu>
-          <Container  style={{ marginTop: '7em' }}>
+          <Container style={{ marginTop: '7em' }}>
             <Route path="/" exact component={HomeWrapper} />
-            {/*
+            <RoleBasedRoute path="/admin" role="ADMIN" component={AdminWrapper} />
+              {/*
             <AuthenticatedRoute path="/dojos/new" exact component={NewDojoForm} />
             <AuthenticatedRoute path="/dojos/:dojoId/link-date-poll" component={StartSchedule} />
             <AuthenticatedRoute path="/dojos/:dojoId/select-time-slot" component={SelectTimeSlot} />
@@ -50,5 +56,5 @@ export const App = () => {
         </div>
       </WithUser>
     </Router>
-  );
-}
+      );
+    }

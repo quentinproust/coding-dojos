@@ -9,8 +9,24 @@ export default class SubjectService {
       });
   }
 
+  get(id): Promise<Subject | null> {
+    return axios.get(`/api/subjects/${id}`)
+      .then((response) => {
+        return response.data;
+      });
+  }
+
   toggleInterest(subjectId: String): Promise<any> {
     return axios.post(`/api/subjects/${subjectId}/interest`)
+      .then((response) => {
+        return response.data;
+      });
+  }
+
+  save(subject: Subject): Promise<Subject> {
+    const callMethod = !subject.id ? axios.post : axios.put;
+
+    return callMethod('/api/subjects', subject)
       .then((response) => {
         return response.data;
       });

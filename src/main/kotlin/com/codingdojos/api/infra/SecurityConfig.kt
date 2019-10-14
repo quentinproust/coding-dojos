@@ -76,7 +76,11 @@ class SecurityConfig {
     }
 }
 
-val ADMIN_AUTHORITY = SimpleGrantedAuthority("ADMIN")
+enum class Capability(val key: String) {
+    ADMIN("ADMIN");
+
+    val authority get() = SimpleGrantedAuthority(key)
+}
 
 class AdditionnalRolesServerSecurityContextRepository(
     private val inner: ServerSecurityContextRepository = WebSessionServerSecurityContextRepository(),
@@ -90,7 +94,7 @@ class AdditionnalRolesServerSecurityContextRepository(
                     is OAuth2AuthenticationToken -> {
                         val isAdmin = admins.contains(auth.principal.attributes["email"])
                         val authorities = if (isAdmin) {
-                            auth.authorities.plus(ADMIN_AUTHORITY)
+                            auth.authorities.plus(Capability.ADMIN.authority)
                         } else {
                             auth.authorities
                         }
