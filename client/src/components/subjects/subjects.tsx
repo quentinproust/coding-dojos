@@ -13,21 +13,27 @@ const ListSubject = ({ subjects, toggleVote }) => {
 }
 
 
-const ListIntertedPers = ({interested}) => {
+const ListIntertedPers = ({ interested }) => {
+  console.log("interested", interested);
   return <>
-  {interested.map(person =>
-    <Popup trigger={<Image src={'https://i.pravatar.cc/' + person} avatar />} flowing hoverable>
-      {person}
-    </Popup>
+    {interested.map(person =>
+      <Popup key={person.sub} trigger={<Image src={getImage(person)} avatar />} flowing hoverable>
+        {person.name}
+      </Popup>
 
-  )}
+    )}
   </>
 }
 
-
+function getImage(person) {
+  if (person.picture) {
+    return person.picture;
+  } else {
+    return `https://ui-avatars.com/api/?background=00ADBA&color=ffffff&rounded=true&name=${person.name}`;
+  }
+}
 
 const SubjectItem = ({ subject, toggleVote }) => {
-
   return (
     <List.Item>
       <Authenticated>
@@ -38,7 +44,7 @@ const SubjectItem = ({ subject, toggleVote }) => {
 
       <List.Content>{subject.theme} </List.Content>
 
-      <List.Content><ListIntertedPers interested={subject.interested}/></List.Content>
+      <List.Content><ListIntertedPers interested={subject.interested} /></List.Content>
     </List.Item>
   )
 }
